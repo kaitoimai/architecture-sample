@@ -53,8 +53,8 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 			logger.Info("request", "method", req.Raw.Method, "path", req.Raw.URL.Path)
 			return next(req)
 		}),
-		oas.WithMiddleware(authnMiddleware.Handle), // JWT存在チェック + Claims抽出
-		oas.WithMiddleware(authzMiddleware.Handle), // RBAC認可
+		oas.WithMiddleware(authnMiddleware.Handle), // API Gateway検証済みJWTからClaims抽出
+		oas.WithMiddleware(authzMiddleware.Handle), // RBAC認可（ロールベースアクセス制御）
 		oas.WithErrorHandler(middleware.ErrorHandler),
 	)
 	if err != nil {

@@ -10,8 +10,9 @@ import (
 	"github.com/ogen-go/ogen/middleware"
 )
 
-// AuthnMiddleware は JWT 存在チェック + Claims 抽出を行うミドルウェア
-// 注意: JWT署名検証はAPI Gatewayで実施済みのため、本サービスでは行わない
+// AuthnMiddleware は API Gateway で検証済みの JWT から Claims を抽出するミドルウェア
+// 注意: JWT署名検証はAPI Gatewayで実施済みのため、本サービスでは署名検証を行わず、
+//       ペイロード部分のみをデコードしてユーザー情報を取得する
 type AuthnMiddleware struct{}
 
 // NewAuthnMiddleware creates a new authentication middleware
@@ -19,10 +20,9 @@ func NewAuthnMiddleware() *AuthnMiddleware {
 	return &AuthnMiddleware{}
 }
 
-// Handle processes the authentication middleware
+// Handle は API Gateway から渡された JWT トークンを抽出し、Context に保存する
 func (m *AuthnMiddleware) Handle(req middleware.Request, next middleware.Next) (middleware.Response, error) {
-	// 全てのAPIリクエストでJWT存在チェックを行う
-	// Authorization ヘッダーの存在確認（ガードレール）
+	// API Gateway から渡される Authorization ヘッダーの存在確認
 	authHeader := req.Raw.Header.Get("Authorization")
 	if authHeader == "" {
 		return middleware.Response{}, myerrors.NewUnauthorized("認証トークンが必要です")
@@ -39,7 +39,7 @@ func (m *AuthnMiddleware) Handle(req middleware.Request, next middleware.Next) (
 		return middleware.Response{}, myerrors.NewUnauthorized("認証トークンが空です")
 	}
 
-	// JWT Claims抽出（署名検証なし）
+	// API Gateway で署名検証済みの JWT からペイロードを抽出
 	claims, err := extractClaims(tokenString)
 	if err != nil {
 		return middleware.Response{}, myerrors.NewUnauthorized("トークンの解析に失敗しました")
@@ -56,9 +56,9 @@ func (m *AuthnMiddleware) Handle(req middleware.Request, next middleware.Next) (
 	return next(req)
 }
 
-// extractClaims extracts claims from JWT payload without signature verification
+// extractClaims は API Gateway で検証済みの JWT からペイロードを抽出する
 // JWT format: header.payload.signature
-// 注意: API Gatewayで署名検証済みのため、ペイロード部分のみをデコード
+// 注意: 署名検証は行わず、ペイロード（第2セグメント）のBase64デコードのみ実施
 func extractClaims(tokenString string) (*auth.Claims, error) {
 	// JWT を '.' で分割
 	parts := strings.Split(tokenString, ".")
