@@ -10,6 +10,7 @@
 *.dll
 *.so
 *.dylib
+bin/
 
 # Test binary, built with `go test -c`
 *.test
@@ -38,7 +39,7 @@ tmp
 tmp.sql
 tasks/**
 .DS_Store
-docs/**
+docs
 
 # RSA keys for JWT (DO NOT COMMIT!)
 .keys/
