@@ -1,0 +1,17 @@
+# Temporary files
+tmp/
+
+# Git
+.git
+
+# Documentation
+docs/
+
+# Development
+githooks/
+.serena/
+.claude/
+.codex/
+
+# Environment files
+.env*

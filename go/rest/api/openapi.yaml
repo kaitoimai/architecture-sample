@@ -1,0 +1,131 @@
+openapi: 3.0.0
+info:
+  title: Go REST API Sample
+  version: 1.0.0
+  description: Sample REST API with ogen
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+
+paths:
+  /:
+    get:
+      operationId: getRoot
+      summary: Root endpoint
+      responses:
+        '200':
+          description: Successful response
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /healthz:
+    get:
+      operationId: getHealth
+      summary: Health check endpoint
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /v1/hello:
+    get:
+      operationId: v1GetHello
+      summary: Sample endpoint with structured response
+      parameters:
+        - name: name
+          in: query
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 100
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HelloResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '401':
+          description: Unauthorized - 認証が必要です
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '403':
+          description: Forbidden - アクセス権限がありません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+components:
+  schemas:
+    HelloResponse:
+      type: object
+      required:
+        - message
+        - timestamp
+      properties:
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    # RFC 9457 Problem Details schema
+    # INFO: ogen v1.14ではapplication/problem+jsonをサポートしていない
+    ProblemDetails:
+      type: object
+      required:
+        - type
+        - title
+        - status
+      properties:
+        status:
+          type: integer
+          format: int32
+          description: サーバによって生成されたHTTPステータスコード
+          example: 400
+        instance:
+          type: string
+          description: |
+            - 問題の発生箇所の参照URI
+            - 用途としては、エンドポイントのパスなどを指定する
+          example: "/v1/hello"
+        title:
+          type: string
+          description: 人間が読むことのできるエラー情報の要約（ユーザー/クライアント向け）
+          example: 入力内容に誤りがあります
+        detail:
+          type: string
+          description: |
+            人間が読むことのできるエラー情報の詳細（ユーザー/クライアント向け）
+            - 開発者向けの内部情報は含めない
+            - エラー解消のヒントや入力ミスの理由を提供する
+          example: 名前は100文字以内で入力してください
+        type:
+          type: string
+          format: uri
+          description: |
+            - 問題の種類を識別するURL
+            - 用途としては、自社/自組織で管理しているエラー詳細ドキュメントへのURLなどを指定する
+            - デフォルトはabout:blank
+          example: about:blank
