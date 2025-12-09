@@ -1,0 +1,57 @@
+routes:
+  # Example route for user service with JWT + Revoke
+  - path: "/api/v1/users"
+    methods: ["GET", "POST"]
+    backend:
+      url: "https://user-service.example.com"
+      timeout: 30s
+    middleware:
+      - type: "jwt"
+        config:
+          skip_validation: false
+          required_claims: ["sub"]
+      - type: "revoke"
+        config:
+          fail_open: false
+          user_id_claim: "sub"
+          issued_at_claim: "iat"
+      - type: "cors"
+        config:
+          allowed_origins: ["*"]
+          allowed_methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    priority: 10
+
+  # Example route for user detail (with path parameter)
+  - path: "/api/v1/users/:id"
+    methods: ["GET", "PUT", "DELETE"]
+    backend:
+      url: "https://user-service.example.com"
+      timeout: 30s
+    middleware:
+      - type: "jwt"
+        config:
+          skip_validation: false
+          required_claims: ["sub"]
+      - type: "revoke"
+        config:
+          fail_open: false
+    priority: 20
+
+  # Example route for order service
+  - path: "/api/v1/orders"
+    methods: ["GET", "POST"]
+    backend:
+      url: "https://order-service.example.com"
+      timeout: 30s
+    middleware:
+      - type: "jwt"
+    priority: 30
+
+  # Health check endpoint (no authentication)
+  - path: "/health"
+    methods: ["GET"]
+    backend:
+      url: "http://localhost:8080"
+      timeout: 5s
+    middleware: []
+    priority: 1

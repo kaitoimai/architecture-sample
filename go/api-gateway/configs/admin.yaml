@@ -1,0 +1,25 @@
+# Admin Server Configuration
+
+server:
+  host: "0.0.0.0"
+  port: 8082  # Admin server port
+  read_timeout: 30s
+  write_timeout: 30s
+  shutdown_timeout: 10s
+
+logging:
+  level: "info"
+  format: "json"
+
+redis:
+  host: "localhost:6379"
+  password: ""
+  db: 0
+  pool_size: 10
+  dial_timeout: 5s
+  read_timeout: 3s
+  write_timeout: 3s
+  key_prefix: "api-gateway:"
+
+# Note: ADMIN_API_KEY should be set via environment variable
+# Example: export ADMIN_API_KEY="your-secure-api-key-here"
